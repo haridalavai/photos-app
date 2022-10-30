@@ -1,0 +1,20 @@
+service: photos-app
+frameworkVersion: '3'
+
+plugins:
+  - serverless-dotenv-plugin
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+
+environment:
+  S3_BUCKET: ${env:S3_BUCKET}
+
+functions:
+  uploadPhoto:
+    handler: ./build/handler.uploadPhoto
+  getPhotos:
+    handler: ./build/handler.getPhotos
