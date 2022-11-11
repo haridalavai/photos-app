@@ -15,83 +15,103 @@ export const uploadPhoto = async (event: APIGatewayEvent) => {
   }
 
   try {
-    const parts = extractFile(event);
-    await mongoose.connect(process.env.MONGO_URI);
+    // const parts = extractFile(event);
+    // await mongoose.connect(process.env.MONGO_URI);
 
-    console.log('event::', event.requestContext);
+    // console.log('event::', event.requestContext);
 
-    if (event.body === null) {
-      throw new Error('image is required');
-    }
+    // if (event.body === null) {
+    //   throw new Error('image is required');
+    // }
 
-    const result = [];
+    // const result = [];
 
-    console.log(BUCKET);
+    // console.log(BUCKET);
 
-    for (let i = 0; i < parts.length; i++) {
-      const { data } = parts[i];
-      const filename = new Date(Date.now()).toISOString();
-      const image = sharp(data);
-      const metadata = await image.metadata();
+    // for (let i = 0; i < parts.length; i++) {
+    //   const { filename, data } = parts[i];
+    //   const extention = filename.split('.').pop();
+    //   const filenameDate = new Date(Date.now()).toISOString();
+    //   const image = sharp(data);
+    //   const metadata = await image.metadata();
 
-      if (event.requestContext.authorizer && metadata.width) {
-        const userId = event?.requestContext?.authorizer.claims.sub;
+    //   if (event.requestContext.authorizer && metadata.width) {
+    //     const userId = event?.requestContext?.authorizer.claims.sub;
 
-        await Promise.all([
-          image
-            .resize(metadata.width > 400 ? 400 : metadata.width)
-            .webp()
-            .toBuffer()
-            .then((outputBuffer) => {
-              //console.log("inside resize");
+    //     await Promise.all([
+    //       image
+    //         .resize(metadata.width > 400 ? 400 : metadata.width)
+    //         .webp()
+    //         .toBuffer()
+    //         .then((outputBuffer) => {
+    //           //console.log("inside resize");
 
-              return s3
-                .putObject({
-                  Key: `${userId}/thumbnails/${filename}.webp`,
-                  Bucket: BUCKET!,
-                  Body: outputBuffer,
-                })
-                .promise();
-            }),
+    //           return s3
+    //             .putObject({
+    //               Key: `${userId}/thumbnails/${filename}.webp`,
+    //               Bucket: BUCKET!,
+    //               Body: outputBuffer,
+    //             })
+    //             .promise();
+    //         }),
 
-          image
-            .resize(metadata.width > 1080 ? 1080 : metadata.width)
-            .webp()
-            .toBuffer()
-            .then((outputBuffer) => {
-              //console.log("inside resize");
-              return s3
-                .putObject({
-                  Key: `${userId}/webview/${filename}.webp`,
-                  Bucket: BUCKET!,
-                  Body: outputBuffer,
-                })
-                .promise();
-            }),
+    //       image
+    //         .resize(metadata.width > 1080 ? 1080 : metadata.width)
+    //         .webp()
+    //         .toBuffer()
+    //         .then((outputBuffer) => {
+    //           //console.log("inside resize");
+    //           return s3
+    //             .putObject({
+    //               Key: `${userId}/webview/${filename}.webp`,
+    //               Bucket: BUCKET!,
+    //               Body: outputBuffer,
+    //             })
+    //             .promise();
+    //         }),
 
-          await s3
-            .putObject({
-              Key: `${userId}/original/${filename}.png`,
-              Bucket: BUCKET!,
-              Body: data,
-            })
-            .promise(),
-        ]);
+    //       await s3
+    //         .putObject({
+    //           Key: `${userId}/original/${filename}.${extention}`,
+    //           Bucket: BUCKET!,
+    //           Body: data,
+    //         })
+    //         .promise(),
+    //     ]);
 
-        const photo = Photo.build({
-          userId,
-          thumbnail: `${userId}/thumbnails/${filename}.webp`,
-          webView: `${userId}/webview/${filename}.webp`,
-          original: `${userId}/original/${filename}.png`,
-          name: filename,
-          timestamp: new Date(Date.now()),
-        });
+    //     const photo = Photo.build({
+    //       userId,
+    //       thumbnail: `${userId}/thumbnails/${filename}.webp`,
+    //       webView: `${userId}/webview/${filename}.webp`,
+    //       original: `${userId}/original/${filename}.${extention}`,
+    //       name: filename,
+    //       timestamp: new Date(Date.now()),
+    //     });
 
-        await photo.save();
+    //     await photo.save();
 
-        result.push(photo);
-      }
-    }
+    //     result.push(photo);
+    //   }
+    // }
+    // return {
+    //   statusCode: 200,
+    //   headers: {
+    //     'Access-Control-Allow-Origin': '*',
+    //     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    //     'Access-Control-Allow-Headers': 'content-type',
+    //   },
+    //   body: JSON.stringify({
+    //     result,
+    //   }),
+    // };
+
+    const bucketParams = {
+      Bucket: BUCKET!,
+      Key: 'test',
+    };
+
+    const url = await s3.getSignedUrlPromise('putObject', bucketParams);
+
     return {
       statusCode: 200,
       headers: {
@@ -100,7 +120,7 @@ export const uploadPhoto = async (event: APIGatewayEvent) => {
         'Access-Control-Allow-Headers': 'content-type',
       },
       body: JSON.stringify({
-        result,
+        url,
       }),
     };
   } catch (err) {
