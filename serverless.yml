@@ -1,4 +1,4 @@
-service: photos-app
+service: photos-app-v2
 frameworkVersion: '3'
 
 plugins:
@@ -8,8 +8,8 @@ plugins:
 
 useDotenv: true
 
-package:
-  individually: true
+# package:
+#   individually: true
 
 provider:
   name: aws
@@ -21,15 +21,18 @@ environment:
 functions:
   uploadPhoto:
     handler: src/handler.uploadPhoto
+  uploadPhotos:
+    handler: src/handler.uploadPhotos
   getPhotos:
     handler: src/handler.getPhotos
   getThumbnails:
     handler: src/handler.getThumbnails
+  processImage:
+    handler: src/handler.processImage
 
 custom:
   bundle:
-    packager: 'npm' # Packager that will be used to package your external modules
     packagerOptions:
       scripts:
         - rm -rf node_modules/sharp
-        - npm install --arch=x64 --platform=linux --libc=glibc sharp
+        - npm install --arch=x64 --platform=linux sharp

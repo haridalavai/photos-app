@@ -7,6 +7,7 @@ interface PhotoAttrs {
   original: string;
   thumbnail: string;
   webView: string;
+  type: string;
 }
 
 interface PhotoDoc extends mongoose.Document {
@@ -16,6 +17,7 @@ interface PhotoDoc extends mongoose.Document {
   original: string;
   thumbnail: string;
   webView: string;
+  type: string;
 }
 
 interface PhotoModel extends mongoose.Model<PhotoDoc> {
@@ -45,6 +47,10 @@ const photoSchema = new mongoose.Schema(
       required: true,
     },
     webView: {
+      type: String,
+      required: true,
+    },
+    type: {
       type: String,
       required: true,
     },
